@@ -27,12 +27,16 @@ export class UserService {
     });
   }
 
-  findAll() {
-    return `This action returns all user`;
+  async findOne(userId: number) {
+    return await this.prisma.user.findUnique({
+      where: {
+        id: userId,
+      },
+    });
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} user`;
+  findAll() {
+    return `This action returns all user`;
   }
 
   update(id: number, updateUserDto: UpdateUserDto) {
