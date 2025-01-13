@@ -1,5 +1,4 @@
-
-
 export type AuthJwtPayload = {
-    sub: number;
-}
+  sub: string;
+  sessionId?: string;
+};

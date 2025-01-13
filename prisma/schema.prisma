@@ -14,17 +14,19 @@ datasource db {
 }
 
 model Comment {
-  id        Int       @id @default(autoincrement())
+  // id        Int       @id @default(autoincrement())
+  id        String    @id @default(uuid())
   text      String
   createdAt DateTime? @default(now()) @db.Timestamp(6)
-  user_id   Int
+  user_id   String
   user      User      @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "comments_author_id_users_id_fk")
-  post_id   Int
+  post_id   String
   post      Post      @relation(fields: [post_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "comments_post_id_posts_id_fk")
 }
 
 model Post {
-  id        Int       @id @default(autoincrement())
+  // id        Int       @id @default(autoincrement())
+  id        String    @id @default(uuid())
   createdAt DateTime  @default(now())
   slug      String    @unique
   title     String
@@ -39,7 +41,8 @@ model Post {
 }
 
 model User {
-  id                 Int       @id @default(autoincrement())
+  // id                 Int       @id @default(autoincrement())
+  id                 String    @id @default(uuid())
   email              String    @unique
   name               String
   password           String
@@ -47,6 +50,42 @@ model User {
   role               Role      @default(USER)
   comments           Comment[]
   posts              Post[]
+
+  //
+  isEmailVerified Boolean          @default(false)
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  userPreferences UserPreferences?
+  sessions        Session[]
+}
+
+model UserPreferences {
+  // id                Int     @id @default(autoincrement())
+  id                String  @id @default(uuid())
+  userId            String  @unique
+  enable2FA         Boolean @default(false)
+  twoFactorSecret   String?
+  emailNotification Boolean @default(true)
+  user              User    @relation(fields: [userId], references: [id])
+}
+
+model Session {
+  // id        Int      @id @default(autoincrement())
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  userAgent String
+  createdAt DateTime @default(now())
+  expiresAt DateTime
+}
+
+model VerificationRequest {
+  id        String   @id @default(uuid())
+  userId    String
+  code      String   @default(uuid())
+  type      String
+  expires   DateTime
+  createdAt DateTime @default(now())
 }
 
 model Category {

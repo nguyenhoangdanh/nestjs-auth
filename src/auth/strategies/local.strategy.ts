@@ -7,13 +7,14 @@ import { Injectable, UnauthorizedException } from '@nestjs/common';
 export class LocalStrategy extends PassportStrategy(Strategy) {
   constructor(private readonly authService: AuthService) {
     super({
-        usernameField: 'email',
+      usernameField: 'email',
+      passwordField: 'password',
     });
   }
 
   async validate(email: string, password: string) {
     if (password === '')
-        throw new UnauthorizedException('Please provide your password!');
-      return this.authService.validateLocalUser(email, password);
-    }
+      throw new UnauthorizedException('Please provide your password!');
+    return this.authService.validateLocalUser(email, password);
+  }
 }
