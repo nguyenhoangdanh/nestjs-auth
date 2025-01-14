@@ -1,6 +1,20 @@
-import { Controller, Get, Request, Response, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Put,
+  Request,
+  Response,
+  UseGuards,
+} from '@nestjs/common';
 import { MfaService } from './mfa.service';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth/jwt-auth.guard';
+import {
+  mfaSchema,
+  verifyMfaForLoginSchema,
+} from 'src/commons/validators/mfa.validator';
+import { HTTPSTATUS } from 'src/auth/config/http.config';
+import { setAuthenticaionCookies } from 'src/commons/ultils/cookie';
 
 @UseGuards(JwtAuthGuard)
 @Controller('mfa')
@@ -17,5 +31,55 @@ export class MfaController {
       qrImageUrl,
       secret,
     });
+  }
+  @Post('verify')
+  async verifyMfa(@Request() req, @Response() res) {
+    const { code, secretKey } = mfaSchema.parse({
+      ...req.body,
+    });
+    const userId = req.user.userId;
+    const { message, userPreferences } = await this.mfaService.verifyMFASetup(
+      userId,
+      code,
+      secretKey,
+    );
+
+    return res.status(HTTPSTATUS.OK).json({
+      message,
+      userPreferences,
+    });
+  }
+
+  @Put('revoke')
+  async revokeMfa(@Request() req, @Response() res) {
+    const userId = req.user.userId;
+    const { message, userPreferences } =
+      await this.mfaService.revokeMFASetup(userId);
+
+    return res.status(HTTPSTATUS.OK).json({
+      message,
+      userPreferences,
+    });
+  }
+
+  @Post('login')
+  async loginWithMfa(@Request() req, @Response() res) {
+    const { code, email, userAgent } = verifyMfaForLoginSchema.parse({
+      ...req.body,
+      userAgent: req.headers['user-agent'],
+    });
+    const { accessToken, refreshToken, user } =
+      await this.mfaService.loginWithMFA(email, code, userAgent);
+
+    return setAuthenticaionCookies({
+      res,
+      accessToken,
+      refreshToken,
+    })
+      .status(HTTPSTATUS.OK)
+      .json({
+        message: 'User logged in successfully',
+        user,
+      });
   }
 }

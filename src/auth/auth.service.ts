@@ -215,7 +215,7 @@ export class AuthService {
   }
 
   async validateJwtUser(userId: string, sessionId: string) {
-    const user = await this.userService.findOne(userId);
+    const user = await this.userService.findById(userId);
 
     if (!user) {
       throw new UnauthorizedException('User not found');
@@ -229,7 +229,7 @@ export class AuthService {
   }
 
   async validateRefreshToken(userId: string) {
-    const user = await this.userService.findOne(userId);
+    const user = await this.userService.findById(userId);
 
     if (!user) {
       throw new UnauthorizedException('User not found');
@@ -252,5 +252,13 @@ export class AuthService {
       accessToken,
       refreshToken,
     };
+  }
+
+  async logout(sessionId: string) {
+    return await this.prisma.session.delete({
+      where: {
+        id: sessionId,
+      },
+    });
   }
 }

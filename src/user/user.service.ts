@@ -98,7 +98,7 @@ export class UserService {
     };
   }
 
-  async findOne(userId: string) {
+  async findById(userId: string) {
     return await this.prisma.user.findUnique({
       where: {
         id: userId,

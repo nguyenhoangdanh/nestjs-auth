@@ -13,8 +13,12 @@ import { CreateUserDto } from '../user/dto/create-user.dto';
 import { LocalAuthGuard } from './guards/local-auth/local-auth.guard';
 import { JwtAuthGuard } from './guards/jwt-auth/jwt-auth.guard';
 import { RefreshAuthGuard } from './guards/refresh-auth/refresh-auth.guard';
-import { setAuthenticaionCookies } from 'src/commons/ultils/cookie';
+import {
+  clearAuthenticaionCookies,
+  setAuthenticaionCookies,
+} from 'src/commons/ultils/cookie';
 import { verificationEmailSchema } from 'src/commons/validators/auth.validator';
+import { HTTPSTATUS } from './config/http.config';
 
 @Controller('auth')
 export class AuthController {
@@ -79,5 +83,15 @@ export class AuthController {
   @Post('refresh')
   refresh(@Request() req) {
     return this.authService.refreshToken(req.user.id, req.user.name);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post('logout')
+  async logout(@Request() req, @Response() res) {
+    const sessionId = req.sessionId;
+    await this.authService.logout(sessionId);
+    return clearAuthenticaionCookies(res).status(HTTPSTATUS.OK).json({
+      message: 'User logged out successfully',
+    });
   }
 }

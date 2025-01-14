@@ -33,6 +33,7 @@
     "@types/passport-local": "^1.0.38",
     "argon2": "^0.41.1",
     "date-fns": "^4.1.0",
+    "dotenv": "^16.4.7",
     "passport": "^0.7.0",
     "passport-jwt": "^4.0.1",
     "passport-local": "^1.0.0",
