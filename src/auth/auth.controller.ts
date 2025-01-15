@@ -17,7 +17,10 @@ import {
   clearAuthenticaionCookies,
   setAuthenticaionCookies,
 } from 'src/commons/ultils/cookie';
-import { verificationEmailSchema } from 'src/commons/validators/auth.validator';
+import {
+  loginSchema,
+  verificationEmailSchema,
+} from 'src/commons/validators/auth.validator';
 import { HTTPSTATUS } from './config/http.config';
 
 @Controller('auth')
@@ -43,11 +46,21 @@ export class AuthController {
   @Post('login')
   async loginUser(@Request() req, @Response() res) {
     const userAgent = req.headers['user-agent'];
-    const { accessToken, refreshToken, user, sessionId } =
-      await this.authService.login(req.user.id, req.user.name, userAgent);
 
-    if (sessionId) {
-      req.session = { sessionId };
+    const body = loginSchema.parse({
+      ...req.body,
+      userAgent,
+    });
+
+    const { user, accessToken, refreshToken, mfaRequired } =
+      await this.authService.login(body);
+
+    if (mfaRequired) {
+      return res.status(HTTPSTATUS.OK).json({
+        message: 'Verify MFA authentication',
+        user,
+        mfaRequired,
+      });
     }
 
     return setAuthenticaionCookies({
@@ -55,11 +68,11 @@ export class AuthController {
       accessToken,
       refreshToken,
     })
-      .status(HttpStatus.OK)
+      .status(HTTPSTATUS.OK)
       .json({
-        message: 'Login successful',
+        message: 'User logged in successfully',
         user,
-        accessToken,
+        mfaRequired,
       });
   }
 

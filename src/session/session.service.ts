@@ -37,12 +37,20 @@ export class SessionService {
             id: true,
             name: true,
             email: true,
+            userPreferences: true,
           },
         },
       },
     });
+
+    const user = {
+      id: session.user.id,
+      name: session.user.name,
+      email: session.user.email,
+      userPreferences: session.user.userPreferences,
+    };
     return {
-      session,
+      user,
     };
   }
 

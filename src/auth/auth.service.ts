@@ -21,6 +21,7 @@ import { anHourFromNow, threeMinutesAgo } from 'src/commons/ultils/date-time';
 import { AppConfig } from './config/app.config';
 import { sendEmail } from 'src/mailers/mailer';
 import { passwordResetTemplate } from 'src/mailers/template';
+import { ILoginDto } from 'src/commons/interfaces/auth';
 
 @Injectable()
 export class AuthService {
@@ -100,23 +101,31 @@ export class AuthService {
     };
   }
 
-  async login(userId: string, name?: string, userAgent?: string) {
-    // const session = await this.prisma.session.create({
-    //   data: {
-    //     userId,
-    //     userAgent,
-    //     createdAt: new Date(),
-    //     expiresAt: thirtyDaysFromNow(),
-    //   },
-    // });
+  async login(data: ILoginDto) {
+    const { email, userAgent } = data;
+
+    const user = await this.userService.findByEmail(email);
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    if (user.userPreferences?.enable2FA) {
+      return {
+        user: null,
+        mfaRequired: true,
+        accessToken: '',
+        refreshToken: '',
+      };
+    }
 
     const { sessionId } = await this.userService.createSessionAfterLogin(
-      userId,
+      user.id,
       userAgent,
     );
 
     const { accessToken, refreshToken } = await this.generateTokens(
-      userId,
+      user.id,
       sessionId,
     );
 
@@ -125,10 +134,11 @@ export class AuthService {
       refreshToken,
       sessionId,
       user: {
-        id: userId,
-        name,
+        id: user.id,
+        name: user.name,
         userAgent,
       },
+      mfaRequired: false,
     };
   }
 
@@ -222,8 +232,6 @@ export class AuthService {
     }
 
     const currentUser = { id: user.id, sessionId };
-
-    console.log('currentUser', currentUser);
 
     return currentUser;
   }

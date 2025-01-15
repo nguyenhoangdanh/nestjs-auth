@@ -16,11 +16,11 @@ import {
 import { HTTPSTATUS } from 'src/auth/config/http.config';
 import { setAuthenticaionCookies } from 'src/commons/ultils/cookie';
 
-@UseGuards(JwtAuthGuard)
 @Controller('mfa')
 export class MfaController {
   constructor(private readonly mfaService: MfaService) {}
 
+  @UseGuards(JwtAuthGuard)
   @Get('setup')
   async generateMfaSetup(@Request() req, @Response() res) {
     const userId = req.user.userId;
@@ -32,6 +32,7 @@ export class MfaController {
       secret,
     });
   }
+  @UseGuards(JwtAuthGuard)
   @Post('verify')
   async verifyMfa(@Request() req, @Response() res) {
     const { code, secretKey } = mfaSchema.parse({
@@ -50,6 +51,7 @@ export class MfaController {
     });
   }
 
+  @UseGuards(JwtAuthGuard)
   @Put('revoke')
   async revokeMfa(@Request() req, @Response() res) {
     const userId = req.user.userId;
@@ -62,7 +64,7 @@ export class MfaController {
     });
   }
 
-  @Post('login')
+  @Post('verify-login')
   async loginWithMfa(@Request() req, @Response() res) {
     const { code, email, userAgent } = verifyMfaForLoginSchema.parse({
       ...req.body,

@@ -41,10 +41,10 @@ export class SessionController {
         message: 'Session not found',
       });
     }
-    const { session } = await this.sessionService.getOneSession(sessionId);
+    const { user } = await this.sessionService.getOneSession(sessionId);
     return res.status(HTTPSTATUS.OK).json({
       message: 'Retrieved session successfully',
-      session,
+      user,
     });
   }
 

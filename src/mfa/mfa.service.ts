@@ -87,23 +87,18 @@ export class MfaService {
     }
 
     // // Generate a TOTP code
-    const tokenCode = speakeasy.totp({
-      secret: secretKey,
-      encoding: 'base32',
-    });
-    console.log('tokenCode', tokenCode);
+    // const tokenCode = speakeasy.totp({
+    //   secret: secretKey,
+    //   encoding: 'base32',
+    // });
+    // console.log('tokenCode', tokenCode);
 
     // const OTPCode = `${config.APP_ORIGIN}/mfa/verify`;
-
-    // await sendEmail({
-    //     to: user.email,
-    //     ...mfaSetupTemplate(tokenCode),
-    // })
 
     const isValid = speakeasy.totp.verify({
       secret: secretKey,
       encoding: 'base32',
-      token: tokenCode,
+      token: code,
     });
 
     if (!isValid) {
